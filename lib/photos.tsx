@@ -5,7 +5,7 @@ export type Photo = {
   id: string;
   image_url: string;
   message?: string;
-  created_at: string | null;
+  created_at: string;
 };
 
 /**
@@ -46,7 +46,7 @@ export async function uploadPhotoToSupabase(file: File, message: string) {
 export async function fetchPhotosFromSupabase(): Promise<Photo[]> {
   const { data, error } = await supabase
     .from("guestbook")
-    .select("id, image_url, message, created_at") // include timestamp
+    .select("id, image_url, message, created_at") // must include created_at
     .order("created_at", { ascending: false });
 
   if (error) throw new Error(error.message);
