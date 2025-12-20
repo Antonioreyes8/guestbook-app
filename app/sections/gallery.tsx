@@ -52,7 +52,7 @@ export default function Gallery({ photos, onLike }: GalleryProps) {
             style={{ marginTop: 5, fontSize: 16, cursor: "pointer" }}
             onClick={() => onLike(photo.id)} // Call the parent handler when clicked
           >
-            ❤️ {photo.likes} {/* Display current number of likes */}
+            ♡ {photo.likes} {/* Display current number of likes */}
           </button>
         </div>
       ))}
