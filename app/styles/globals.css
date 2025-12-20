@@ -1,0 +1,25 @@
+@font-face {
+	font-family: "RIBIN131";
+	src: url("../assets/typefaces/Ribbon131.woff") format("woff"),
+		url("../assets/typefaces/Ribbon131.woff2") format("woff2");
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
+}
+
+html,
+body {
+	font-family: "RIBIN131", sans-serif;
+	background-color: #f9f9f9;
+	color: #333;
+	overflow-x: hidden;
+	display: flex;
+  justify-content: center;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+.MainContainer {
+	/*border: 1px solid black;*/
+	overflow-x: hidden;
+}

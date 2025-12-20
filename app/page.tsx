@@ -1,93 +1,45 @@
-"use client";
+"use client"; 
+// This tells Next.js that this file runs in the browser (client-side rendering)
 
-import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
+import Heading from "./sections/heading"; // Page heading component
+import Gallery from "./sections/gallery"; // Photo gallery component
+import { usePhotos } from "./hooks/usePhotos"; // Custom hook for photo logic
 
-type Photo = {
-  id: string;
-  image_url: string;
-};
-
+/**
+ * Home page component
+ */
 export default function Home() {
-  const [file, setFile] = useState<File | null>(null);
-  const [photos, setPhotos] = useState<Photo[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  async function uploadPhoto() {
-    if (!file) return;
-
-    setLoading(true);
-
-    const fileName = `${Date.now()}-${file.name}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("photos")
-      .upload(fileName, file);
-
-    if (uploadError) {
-      alert(uploadError.message);
-      setLoading(false);
-      return;
-    }
-
-    const { data } = supabase.storage
-      .from("photos")
-      .getPublicUrl(fileName);
-
-    const { error: insertError } = await supabase
-      .from("guestbook")
-      .insert({ image_url: data.publicUrl });
-
-    if (insertError) {
-      alert(insertError.message);
-    }
-
-    setFile(null);
-    setLoading(false);
-    fetchPhotos();
-  }
-
-  async function fetchPhotos() {
-    const { data, error } = await supabase
-      .from("guestbook")
-      .select("id, image_url")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    setPhotos(data ?? []);
-  }
-
-  useEffect(() => {
-    fetchPhotos();
-  }, []);
+  // Destructure state & actions from our custom hook
+  const { file, setFile, photos, loading, message, setMessage, uploadPhoto } = usePhotos();
 
   return (
-    <main style={{ padding: 20 }}>
-      <h1>📸 Guestbook</h1>
+    <main className="MainContainer">
+      {/* Heading section */}
+      <Heading />
 
+      {/* File input for selecting an image */}
       <input
         type="file"
         accept="image/*"
-        onChange={(e) => setFile(e.target.files?.[0] || null)}
+        onChange={(e) => setFile(e.target.files?.[0] || null)} // update selected file
       />
 
+      {/* Text input for optional message */}
+      <input
+        type="text"
+        placeholder="Add a message"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)} // update message state
+        style={{ marginRight: 10, padding: "4px 8px" }}
+      />
+
+      {/* Upload button */}
       <button onClick={uploadPhoto} disabled={loading}>
-        {loading ? "Uploading..." : "Upload"}
+        {loading ? "Uploading..." : "Upload"} {/* Show uploading state */}
       </button>
 
-      <div style={{ marginTop: 20 }}>
-        {photos.map((p) => (
-          <img
-            key={p.id}
-            src={p.image_url}
-            style={{ width: 200, margin: 10 }}
-          />
-        ))}
-      </div>
+      {/* Gallery of uploaded photos */}
+      <Gallery photos={photos} />
     </main>
   );
 }
