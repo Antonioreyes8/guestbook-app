@@ -26,7 +26,7 @@ export default function Gallery({ photos, onLike }: GalleryProps) {
       {photos.map((photo) => (
         <div
           key={photo.id} // Unique key for React list rendering
-          style={{ display: "inline-block", textAlign: "center" }} // Basic layout for gallery items
+          className="galleryitems"
         >
           {/* Photo image */}
           <img src={photo.image_url} alt="Guestbook upload" />
@@ -37,7 +37,7 @@ export default function Gallery({ photos, onLike }: GalleryProps) {
           )}
 
           {/* Formatted creation date */}
-          <p style={{ marginTop: 2, fontSize: 24, color: "#666" }}>
+          <p style={{ marginTop: 2, fontSize: 24 }}>
             {photo.created_at
               ? new Date(photo.created_at + "Z").toLocaleDateString(undefined, {
                   year: "numeric",
