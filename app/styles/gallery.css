@@ -1,31 +1,42 @@
 /* Default (desktop): horizontal scroll */
 .gallery {
 	display: flex;
-	gap: 16px;
 	height: 80svh;
 	margin-top: 20px;
+  gap: 16px;
 
 	flex-direction: row;
 	overflow-x: auto;
 	overflow-y: hidden;
 	white-space: nowrap;
 	scroll-behavior: smooth;
+  font-size: 24px;
 	/*border: 1px solid black;*/
-}
-
-.gallery img {
-	flex-shrink: 0;
-	height: 60%;
-  /*border: 1px solid black;*/
 }
 
 .galleryitems {
   display: inline-block;
   text-align: center;
-  justify-content: space-between;
+  gap: 10px
   /*border: 1px solid black;*/
 }
 
+.gallery img {
+	height: 60%;
+  /*border: 1px solid black;*/
+}
+
+.gallery button {
+  background: none;
+  border-radius: 5px;
+  border: 1px solid black;
+  font-size: 16px;
+}
+
+.gallery button:hover {
+  background-color: #eee;
+  cursor: pointer;
+}
 
 
 /* iPad and smaller: vertical scroll */
@@ -40,5 +51,6 @@
 	.gallery img {
 		width: 100%;
 		max-width: 400px;
+    height: auto;
 	}
 }

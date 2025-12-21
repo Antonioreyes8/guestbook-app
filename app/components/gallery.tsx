@@ -33,11 +33,11 @@ export default function Gallery({ photos, onLike }: GalleryProps) {
 
           {/* Optional message displayed below the photo */}
           {photo.message && (
-            <p style={{ marginTop: 5, fontSize: 24 }}>{photo.message}</p>
+            <p>{photo.message}</p>
           )}
 
           {/* Formatted creation date */}
-          <p style={{ marginTop: 2, fontSize: 24 }}>
+          <p>
             {photo.created_at
               ? new Date(photo.created_at + "Z").toLocaleDateString(undefined, {
                   year: "numeric",
@@ -49,7 +49,6 @@ export default function Gallery({ photos, onLike }: GalleryProps) {
 
           {/* Like button */}
           <button
-            style={{ marginTop: 5, fontSize: 16, cursor: "pointer" }}
             onClick={() => onLike(photo.id)} // Call the parent handler when clicked
           >
             ♡ {photo.likes} {/* Display current number of likes */}

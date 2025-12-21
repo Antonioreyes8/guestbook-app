@@ -1,61 +1,68 @@
-"use client"; // Next.js directive: this component is rendered on the client (browser)
+"use client"; // Next.js directive: this component is rendered in the browser
 
 /**
  * Home page component for the guestbook application.
- * 
+ *
  * Features:
  * - Upload images to Supabase Storage.
  * - Add an optional message for each image.
- * - Display a gallery of uploaded photos with likes and messages.
+ * - Display a gallery of uploaded photos with messages, dates, and likes.
  * - Increment likes with real-time UI updates and persistent storage.
+ * - Floating “Add Post” button to toggle the upload form.
  */
 
-import Heading from "./sections/heading"; // Header component for the page
-import Gallery from "./sections/gallery"; // Gallery component to display uploaded photos
-import { usePhotos } from "./hooks/usePhotos"; // Custom hook managing photos, uploads, messages, and likes
+import { useState } from "react"; // React state hook
+import Heading from "./components/heading"; // Page header
+import Gallery from "./components/gallery"; // Gallery for displaying photos
+import Form from "./components/form"; // Form component for uploading a new photo
+import { usePhotos } from "./hooks/usePhotos"; // Custom hook managing photo state and actions
 
 export default function Home() {
-  // Destructure the state and actions from the custom hook
+  // Destructure all state variables and actions from the custom hook
   const {
-    file,          // Currently selected file
-    setFile,       // Setter for the selected file
-    photos,        // Array of photos fetched from Supabase
-    loading,       // Boolean indicating if an upload is in progress
-    message,       // Message input for the selected photo
-    setMessage,    // Setter for the message input
-    uploadPhoto,   // Function to handle uploading a photo + message
-    handleLike,    // Function to handle incrementing likes on a photo
+    file,        // Currently selected file
+    setFile,     // Setter for file selection
+    photos,      // Array of photo objects from Supabase
+    loading,     // Boolean: true while a photo is uploading
+    message,     // Current message for the photo
+    setMessage,  // Setter for message
+    uploadPhoto, // Function to upload photo + message
+    handleLike,  // Function to handle likes increment
   } = usePhotos();
+
+  // State for toggling the visibility of the upload form
+  const [showForm, setShowForm] = useState(false);
 
   return (
     <main className="MainContainer">
-      {/* Page Heading */}
+      {/* Page heading at the top */}
       <Heading />
 
-      {/* File input: allows the user to select an image from their device */}
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setFile(e.target.files?.[0] || null)} // Update the selected file in state
-      />
+      {/* Gallery of uploaded photos */}
+      <Gallery photos={photos} onLike={handleLike} />
 
-      {/* Text input: allows the user to optionally add a message for the photo */}
-      <input
-        type="text"
-        placeholder="Add a message"
-        value={message} // Controlled input bound to state
-        onChange={(e) => setMessage(e.target.value)} // Update message state on input
-        style={{ marginRight: 10, padding: "4px 8px" }} // Basic inline styling for spacing
-      />
-
-      {/* Upload button */}
-      <button onClick={uploadPhoto} disabled={loading}>
-        {/* Display loading state while upload is in progress */}
-        {loading ? "Uploading..." : "Upload"}
+      {/* Floating Add Post Button */}
+      {/* Clicking toggles the visibility of the upload form */}
+      <button
+        className="add-post-btn" // CSS class for black circle + white plus
+        onClick={() => setShowForm(!showForm)}
+        aria-label="Add new post" // Accessibility label
+      >
+        +
       </button>
 
-      {/* Gallery component: displays all photos with their messages, dates, and likes */}
-      <Gallery photos={photos} onLike={handleLike} />
+      {/* Conditional rendering of the form */}
+      {/* Only shown when showForm is true */}
+      {showForm && (
+        <Form
+          file={file}           // Pass current selected file
+          setFile={setFile}     // Pass file setter
+          message={message}     // Pass current message
+          setMessage={setMessage} // Pass message setter
+          uploadPhoto={uploadPhoto} // Pass upload function
+          loading={loading}     // Pass loading state for button disabling
+        />
+      )}
     </main>
   );
 }
