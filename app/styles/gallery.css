@@ -23,6 +23,7 @@
 
 .gallery img {
 	height: 60%;
+  filter: grayscale(100%); /* 100% black and white */
 	/*border: 1px solid black;*/
 }
 
