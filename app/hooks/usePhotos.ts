@@ -8,97 +8,152 @@ import {
 
 /**
  * Custom React hook to manage guestbook photo functionality.
- * 
+ *
  * Responsibilities:
- * 1. Handle selection of image files.
- * 2. Upload photos to Supabase Storage.
- * 3. Add optional messages for each photo.
- * 4. Fetch all photos from the Supabase database.
- * 5. Handle likes for each photo with optimistic UI updates.
+ * 1. Handle image file selection.
+ * 2. Upload photos + messages to Supabase.
+ * 3. Fetch paginated photos from Supabase.
+ * 4. Append photos using "Load more".
+ * 5. Increment likes with optimistic UI updates.
+ *
+ * This hook is designed to scale efficiently (hundreds+ images)
+ * without reloading the page or duplicating data.
  */
 export function usePhotos() {
   // -----------------------------
-  // State variables
+  // Configuration
   // -----------------------------
-  const [file, setFile] = useState<File | null>(null); // Currently selected file for upload
-  const [photos, setPhotos] = useState<Photo[]>([]);   // List of photos fetched from Supabase
-  const [loading, setLoading] = useState(false);       // Tracks upload progress
-  const [message, setMessage] = useState<string>("");  // User input message for the photo
+  const PAGE_SIZE = 10; // Number of photos per page fetch
 
   // -----------------------------
-  // Fetch all photos from Supabase
+  // State: Upload
   // -----------------------------
-  const fetchPhotos = async () => {
+  const [file, setFile] = useState<File | null>(null); // Selected image file
+  const [message, setMessage] = useState<string>(""); // Optional photo message
+  const [loading, setLoading] = useState(false); // Upload loading state
+
+  // -----------------------------
+  // State: Gallery / Pagination
+  // -----------------------------
+  const [photos, setPhotos] = useState<Photo[]>([]); // All loaded photos
+  const [page, setPage] = useState(0); // Current page index
+  const [hasMore, setHasMore] = useState(true); // Whether more photos exist
+
+  // -----------------------------
+  // Fetch photos for a specific page
+  // -----------------------------
+  const fetchPhotos = async (pageIndex: number, replace = false) => {
     try {
-      const data = await fetchPhotosFromSupabase(); // Query Supabase for all photos
-      setPhotos(data);                               // Update state with fetched photos
+      const from = pageIndex * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      const data = await fetchPhotosFromSupabase(from, to);
+
+      // If fewer than PAGE_SIZE were returned, there are no more photos
+      if (data.length < PAGE_SIZE) {
+        setHasMore(false);
+      }
+
+      // Replace or append photos depending on context
+      setPhotos((prev) => (replace ? data : [...prev, ...data]));
     } catch (error) {
-      console.error("Error fetching photos:", error); // Log any errors for debugging
+      console.error("Error fetching photos:", error);
     }
   };
 
   // -----------------------------
-  // Upload a photo and message
+  // Load the next page of photos
+  // -----------------------------
+  const loadMore = () => {
+    if (!hasMore) return;
+
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchPhotos(nextPage);
+  };
+
+  // -----------------------------
+  // Upload a photo and refresh gallery
   // -----------------------------
   const uploadPhoto = async () => {
-    if (!file) return;          // No file selected, do nothing
-    setLoading(true);           // Disable upload button while in progress
+    if (!file) return;
+
+    setLoading(true);
 
     try {
-      await uploadPhotoToSupabase(file, message); // Upload to Supabase
-      setFile(null);          // Reset file input
-      setMessage("");         // Reset message input
-      fetchPhotos();          // Refresh gallery after upload
+      await uploadPhotoToSupabase(file, message);
+
+      // Reset upload inputs
+      setFile(null);
+      setMessage("");
+
+      // Reset pagination and reload from the beginning
+      setPhotos([]);
+      setPage(0);
+      setHasMore(true);
+
+      fetchPhotos(0, true);
     } catch (error: any) {
-      alert(error.message);   // Notify user if upload fails
+      alert(error.message);
     } finally {
-      setLoading(false);      // Re-enable upload button
+      setLoading(false);
     }
   };
 
   // -----------------------------
-  // Handle liking a photo
+  // Handle liking a photo (optimistic UI)
   // -----------------------------
   const handleLike = async (photoId: string) => {
-    // Optimistically update UI: immediately increment likes in state
+    // Optimistically update UI
     setPhotos((prev) =>
       prev.map((photo) =>
-        photo.id === photoId ? { ...photo, likes: photo.likes + 1 } : photo
+        photo.id === photoId
+          ? { ...photo, likes: photo.likes + 1 }
+          : photo
       )
     );
 
     try {
-      await likePhoto(photoId); // Increment likes in Supabase via RPC
+      await likePhoto(photoId); // Atomic increment via Supabase RPC
     } catch (error) {
-      console.error("Error liking photo:", error); // Log errors
+      console.error("Error liking photo:", error);
 
-      // Rollback UI if Supabase update fails
+      // Roll back UI if update fails
       setPhotos((prev) =>
         prev.map((photo) =>
-          photo.id === photoId ? { ...photo, likes: photo.likes - 1 } : photo
+          photo.id === photoId
+            ? { ...photo, likes: photo.likes - 1 }
+            : photo
         )
       );
     }
   };
 
   // -----------------------------
-  // Effect: Fetch photos once on mount
+  // Initial load on component mount
   // -----------------------------
   useEffect(() => {
-    fetchPhotos(); // Initial fetch when the component loads
+    fetchPhotos(0, true); // Load first page on mount
   }, []);
 
   // -----------------------------
-  // Return state and actions
+  // Public API exposed by the hook
   // -----------------------------
   return {
-    file,         // Selected file
-    setFile,      // Setter for file
-    photos,       // Current photo list
-    loading,      // Upload loading state
-    message,      // Message input
-    setMessage,   // Setter for message input
-    uploadPhoto,  // Function to upload photo
-    handleLike,   // Function to handle likes
+    // Upload state
+    file,
+    setFile,
+    message,
+    setMessage,
+    loading,
+
+    // Gallery state
+    photos,
+    hasMore,
+
+    // Actions
+    uploadPhoto,
+    loadMore,
+    handleLike,
   };
 }

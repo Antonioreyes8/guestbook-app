@@ -1,60 +1,121 @@
-"use client"; // Next.js directive: this component is rendered on the client (browser)
+"use client"; 
+// Tells Next.js this component must run in the browser.
+// Required because this component uses event handlers (onClick)
+// and client-side interactivity.
+
+import "../styles/gallery.css"; 
+// Import gallery-specific styles
+
+import { Photo } from "../../lib/photos"; 
+// Import the shared Photo type so props stay consistent
+// across the app (prevents type mismatches)
 
 /**
- * Gallery component to display a list of uploaded photos in the guestbook.
- * 
- * Features:
- * - Shows the photo image.
- * - Displays optional message for each photo.
- * - Formats and displays the creation date.
- * - Displays a like button that can be clicked to increment likes.
+ * Props accepted by the Gallery component
  */
-
-import "../styles/gallery.css"; // CSS styling for the gallery
-import { Photo } from "../../lib/photos"; // Type definition for photo objects
-
-// Props definition for the Gallery component
 type GalleryProps = {
-  photos: Photo[];            // Array of photos to display
-  onLike: (id: string) => void; // Function to handle liking a photo
+  photos: Photo[];              // Array of photo objects to render
+  onLike: (id: string) => void; // Callback to increment likes for a photo
+  hasMore: boolean;             // Whether more photos exist in the database
+  loadMore: () => void;         // Function to load the next batch of photos
 };
 
-export default function Gallery({ photos, onLike }: GalleryProps) {
+/**
+ * Gallery Component
+ *
+ * Responsibilities:
+ * - Display a grid/list of photo posts
+ * - Show image, message, date, and likes
+ * - Allow users to like photos
+ * - Support lazy image loading
+ * - Render a "Load more" button when more photos exist
+ */
+export default function Gallery({
+  photos,
+  onLike,
+  hasMore,
+  loadMore,
+}: GalleryProps) {
   return (
     <section className="gallery">
-      {/* Loop over each photo and render its content */}
+      {/* 
+        Loop over each photo and render a gallery item.
+        React requires a unique `key` for list items — we use photo.id.
+      */}
       {photos.map((photo) => (
         <div
-          key={photo.id} // Unique key for React list rendering
+          key={photo.id}
           className="galleryitems"
         >
-          {/* Photo image */}
-          <img src={photo.image_url} alt="Guestbook upload" />
+          {/* 
+            Photo image
+            - `loading="lazy"` delays loading until the image is near viewport
+            - This improves performance when many images exist
+          */}
+          <img
+            src={photo.image_url}
+            alt="Guestbook upload"
+            loading="lazy"
+          />
 
-          {/* Optional message displayed below the photo */}
+          {/* 
+            Optional message
+            - Only rendered if message exists
+            - Prevents empty spacing for posts without text
+          */}
           {photo.message && (
-            <p>{photo.message}</p>
+            <p className="gallery-message">
+              {photo.message}
+            </p>
           )}
 
-          {/* Formatted creation date */}
-          <p>
+          {/* 
+            Display formatted creation date
+            - Supabase timestamps are UTC
+            - Adding "Z" ensures correct timezone parsing
+            - Fallback text is shown if date is missing
+          */}
+          <p className="gallery-date">
             {photo.created_at
-              ? new Date(photo.created_at + "Z").toLocaleDateString(undefined, {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                }) // Format: "Jan 1, 2025"
-              : "No date"} {/* Fallback if created_at is missing */}
+              ? new Date(photo.created_at + "Z").toLocaleDateString(
+                  undefined,
+                  {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  }
+                )
+              : "No date"}
           </p>
 
-          {/* Like button */}
+          {/* 
+            Like button
+            - Optimistically updates UI
+            - Calls parent handler to persist change in Supabase
+          */}
           <button
-            onClick={() => onLike(photo.id)} // Call the parent handler when clicked
+            className="like-button"
+            onClick={() => onLike(photo.id)}
+            aria-label="Like photo"
           >
-            ♡ {photo.likes} {/* Display current number of likes */}
+            ♡︎ {photo.likes}
           </button>
         </div>
       ))}
+
+      {/* 
+        Load More button
+        - Only rendered if there are more photos to fetch
+        - Appends new photos to the END of the list (no page reload)
+      */}
+      {hasMore && (
+        <button
+          className="load-more-button"
+          onClick={loadMore}
+        >
+          Load more
+        </button>
+      )}
     </section>
   );
 }

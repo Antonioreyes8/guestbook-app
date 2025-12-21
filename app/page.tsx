@@ -1,66 +1,82 @@
-"use client"; // Next.js directive: this component is rendered in the browser
+"use client"; 
+// Ensures this component is rendered on the client.
+// Required because this page uses state, event handlers,
+// and client-side hooks.
+
+import { useState } from "react"; // React hook for local UI state
+import Heading from "./components/heading"; // Page header component
+import Gallery from "./components/gallery"; // Displays uploaded photos
+import Form from "./components/form"; // Upload form component
+import { usePhotos } from "./hooks/usePhotos"; // Custom hook for photo logic
 
 /**
  * Home page component for the guestbook application.
  *
- * Features:
- * - Upload images to Supabase Storage.
- * - Add an optional message for each image.
- * - Display a gallery of uploaded photos with messages, dates, and likes.
- * - Increment likes with real-time UI updates and persistent storage.
- * - Floating “Add Post” button to toggle the upload form.
+ * Responsibilities:
+ * - Display the page heading
+ * - Render the photo gallery
+ * - Toggle and render the upload form
+ * - Connect UI components to the photo data layer (usePhotos)
  */
-
-import { useState } from "react"; // React state hook
-import Heading from "./components/heading"; // Page header
-import Gallery from "./components/gallery"; // Gallery for displaying photos
-import Form from "./components/form"; // Form component for uploading a new photo
-import { usePhotos } from "./hooks/usePhotos"; // Custom hook managing photo state and actions
-
 export default function Home() {
-  // Destructure all state variables and actions from the custom hook
+  // Destructure state and actions from the custom hook
   const {
-    file,        // Currently selected file
-    setFile,     // Setter for file selection
-    photos,      // Array of photo objects from Supabase
-    loading,     // Boolean: true while a photo is uploading
-    message,     // Current message for the photo
-    setMessage,  // Setter for message
-    uploadPhoto, // Function to upload photo + message
-    handleLike,  // Function to handle likes increment
+    file,        // Currently selected file for upload
+    setFile,     // Setter for selected file
+    photos,      // Array of photos loaded from Supabase
+    loading,     // Upload loading state
+    message,     // Current message input
+    setMessage,  // Setter for message input
+    uploadPhoto, // Upload handler
+    handleLike,  // Like handler
+    loadMore,    // Load next page of photos
+    hasMore,     // Whether more photos exist
   } = usePhotos();
 
-  // State for toggling the visibility of the upload form
+  // Controls whether the upload form is visible
   const [showForm, setShowForm] = useState(false);
+
+  /**
+   * Wrap uploadPhoto so we can also close the form
+   * after a successful upload.
+   */
+  const handleUploadAndClose = async () => {
+    await uploadPhoto();
+    setShowForm(false);
+  };
 
   return (
     <main className="MainContainer">
-      {/* Page heading at the top */}
+      {/* Page heading */}
       <Heading />
 
-      {/* Gallery of uploaded photos */}
-      <Gallery photos={photos} onLike={handleLike} />
+      {/* Photo gallery */}
+      <Gallery
+        photos={photos}
+        onLike={handleLike}
+        hasMore={hasMore}
+        loadMore={loadMore}
+      />
 
       {/* Floating Add Post Button */}
-      {/* Clicking toggles the visibility of the upload form */}
+      {/* Black circle with white "+" */}
       <button
-        className="add-post-btn" // CSS class for black circle + white plus
-        onClick={() => setShowForm(!showForm)}
-        aria-label="Add new post" // Accessibility label
+        className="add-post-btn"
+        onClick={() => setShowForm((prev) => !prev)}
+        aria-label="Add new post"
       >
         +
       </button>
 
-      {/* Conditional rendering of the form */}
-      {/* Only shown when showForm is true */}
+      {/* Upload form (conditionally rendered) */}
       {showForm && (
         <Form
-          file={file}           // Pass current selected file
-          setFile={setFile}     // Pass file setter
-          message={message}     // Pass current message
-          setMessage={setMessage} // Pass message setter
-          uploadPhoto={uploadPhoto} // Pass upload function
-          loading={loading}     // Pass loading state for button disabling
+          file={file}
+          setFile={setFile}
+          message={message}
+          setMessage={setMessage}
+          uploadPhoto={handleUploadAndClose}
+          loading={loading}
         />
       )}
     </main>

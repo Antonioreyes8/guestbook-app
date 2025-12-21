@@ -3,41 +3,64 @@
 	display: flex;
 	height: 80svh;
 	margin-top: 20px;
-  gap: 16px;
+	gap: 16px;
 
 	flex-direction: row;
 	overflow-x: auto;
 	overflow-y: hidden;
 	white-space: nowrap;
 	scroll-behavior: smooth;
-  font-size: 24px;
+	font-size: 24px;
 	/*border: 1px solid black;*/
 }
 
 .galleryitems {
-  display: inline-block;
-  text-align: center;
-  gap: 10px
-  /*border: 1px solid black;*/
+	display: inline-block;
+	text-align: center;
+	gap: 10px;
+	/*border: 1px solid black;*/
 }
 
 .gallery img {
 	height: 60%;
-  /*border: 1px solid black;*/
+	/*border: 1px solid black;*/
 }
 
 .gallery button {
-  background: none;
-  border-radius: 5px;
-  border: 1px solid black;
-  font-size: 16px;
+	background: none;
+	border-radius: 5px;
+	border: none;
 }
 
 .gallery button:hover {
-  background-color: #eee;
-  cursor: pointer;
+  color: red;
+	cursor: pointer;
 }
 
+/* Load More button base styles */
+.load-more-button {
+  border: 1px solid black !important;
+	color: black; /* White text */
+  font-size: 32px; /* Readable font size */
+  padding: 12px 32px; /* Padding for size */
+	font-weight: bold; /* Bold text */
+	border-radius: 8px; /* Rounded corners */
+	cursor: pointer; /* Pointer on hover */
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+	transition: all 0.3s ease; /* Smooth hover transition */
+	margin-right: 20px;
+  margin-top: 40px;
+  margin-bottom: 40px;
+	display: block; /* Make it block for centering */
+  background-color: white !important;
+}
+
+/* Hover effect for desktop/laptop */
+.load-more-button:hover {
+	transform: scale(1.05); /* Slight zoom effect */
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  color: black !important;
+}
 
 /* iPad and smaller: vertical scroll */
 @media (max-width: 1023px) {
@@ -51,6 +74,13 @@
 	.gallery img {
 		width: 100%;
 		max-width: 400px;
-    height: auto;
+		height: auto;
+	}
+	.load-more-button {
+		width: 90%; /* Take most of the screen width */
+		font-size: 18px; /* Slightly bigger for touch */
+		padding: 14px 0; /* Taller button */
+		border-radius: 12px; /* More rounded corners */
+		margin: 20px auto; /* Keep centered */
 	}
 }
