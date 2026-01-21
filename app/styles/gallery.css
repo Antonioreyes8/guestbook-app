@@ -34,7 +34,6 @@
 }
 
 .gallery button:hover {
-	color: red !important;
 	cursor: pointer;
 }
 
