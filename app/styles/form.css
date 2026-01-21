@@ -89,3 +89,8 @@
 .file-button:hover {
   background: #f0f0f0;
 }
+
+.image-preview {
+  max-width: 100px;
+  object-fit: cover;
+}

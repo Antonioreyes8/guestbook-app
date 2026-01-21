@@ -21,6 +21,16 @@ export default function Form({
 }: FormProps) {
 	return (
 		<div className="add-post-form">
+
+      {/* Image preview */}
+      {file && (
+        <img
+          className="image-preview"
+          src={URL.createObjectURL(file)}
+          alt="preview"
+        />
+      )}
+
 			{/* File input */}
 			<label className="file-button">
 				Choose photo
@@ -31,6 +41,7 @@ export default function Form({
 					hidden
 				/>
 			</label>
+
 			{/* Message input */}
 			<textarea
 				className="message-input"
