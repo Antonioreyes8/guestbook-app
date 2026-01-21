@@ -22,13 +22,15 @@ export default function Form({
 	return (
 		<div className="add-post-form">
 			{/* File input */}
-			<input
-        className="FileInput"
-				type="file"
-				accept="image/*"
-				onChange={(e) => setFile(e.target.files?.[0] || null)}
-			/>
-
+			<label className="file-button">
+				Choose photo
+				<input
+					type="file"
+					accept="image/*"
+					onChange={(e) => setFile(e.target.files?.[0] || null)}
+					hidden
+				/>
+			</label>
 			{/* Message input */}
 			<textarea
 				className="message-input"
