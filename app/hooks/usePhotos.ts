@@ -23,7 +23,7 @@ export function usePhotos() {
   // -----------------------------
   // Configuration
   // -----------------------------
-  const PAGE_SIZE = 10; // Number of photos per page fetch
+  const PAGE_SIZE = 8; // Number of photos per page fetch
 
   // -----------------------------
   // State: Upload
